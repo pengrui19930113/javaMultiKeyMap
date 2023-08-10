@@ -20,6 +20,7 @@ public class Shuffling implements StateHandler {
     @Override
     public void onTimer(StateSuperContext ctx) {
         final ShufflingContext sc = (ShufflingContext) ctx;
+        scheduler.tick();
     }
 
     @Override
@@ -29,6 +30,7 @@ public class Shuffling implements StateHandler {
             final Object param = params[0];
             if(param.getClass().isAssignableFrom(String.class)){
                 if(Objects.equals("next",param)){
+                    System.out.println("state change");
                     sc.onShufflingSuccess(this);
                 }else{
                     System.out.println("unknown cmd:"+param);
@@ -39,6 +41,14 @@ public class Shuffling implements StateHandler {
         }else{
             System.out.println("empty params");
         }
+    }
+
+    @Override
+    public void onDestroy(StateSuperContext ctx) {
+        desc.destroy();
+        desc = null;
+        scheduler.destroy();;
+        scheduler = null;
     }
 
     public static void main(String[] args) {

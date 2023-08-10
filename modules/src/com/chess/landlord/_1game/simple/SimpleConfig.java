@@ -5,7 +5,7 @@ import com.chess.landlord._1game.Config;
 public class SimpleConfig implements Config {
     protected int tickMaxPostRunnable = 10;
     protected static final int INVALID_TICK_MAX_POST_RUNNABLE_FIXED_NUM = 10;
-    protected boolean debug = true;
+    protected boolean debug = false;
     public int getTickMaxPostRunnable() {
         return tickMaxPostRunnable>0
                 ?tickMaxPostRunnable

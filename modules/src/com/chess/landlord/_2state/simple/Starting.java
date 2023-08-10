@@ -30,7 +30,10 @@ public class Starting implements StateHandler {
     public void onDestroy(StateSuperContext ctx) {
         final StartingContext cs = (StartingContext) ctx;
         desc.destroy();
+        desc = null;
         desc2.destroy();
+        desc2 = null;
+        scheduler.destroy();
         scheduler = null;
     }
 }

@@ -1,8 +1,6 @@
 package com.chess;
 
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -12,8 +10,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 * interval  间隔时间    n<=0:不间隔    ｜n>0:间隔n
  */
 public interface Scheduler {
+    List<Scheduler> MANAGER = new LinkedList<>();
     static Scheduler create(){
-        return new SchedulerImpl();
+        SchedulerImpl scheduler = new SchedulerImpl();
+        synchronized (MANAGER){
+            MANAGER.add(scheduler);
+        }
+        return scheduler;
     }
     interface Desc{
         boolean stop();
@@ -41,7 +44,7 @@ public interface Scheduler {
      * 不允许并发调用
      */
     void tick();
-
+    void destroy();
     class SchedulerImpl implements Scheduler{
         protected Queue<DescImpl> queue;
         public SchedulerImpl(){
@@ -70,6 +73,14 @@ public interface Scheduler {
             }
 
         }
+
+        @Override
+        public void destroy() {
+            synchronized (MANAGER){
+                MANAGER.remove(this);
+            }
+        }
+
         protected boolean remove(DescImpl di){
             return queue.remove(di);
         }

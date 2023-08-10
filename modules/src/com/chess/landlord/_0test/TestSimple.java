@@ -43,7 +43,7 @@ public class TestSimple {
             }else{
                 game.onAction(line);
             }
-            System.out.println("wait type in main");
+//            System.out.println("wait type in main");
         }
         System.out.println("wait thread");
         try {
