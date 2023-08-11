@@ -2,12 +2,14 @@ package com.chess.landlord._1game.simple;
 
 import com.chess.Final;
 import com.chess.landlord.GeneralLandlord;
+import com.chess.landlord.Poker;
 import com.chess.landlord._1game.Config;
 import com.chess.landlord._1game.StateHandler;
 import com.chess.landlord._1game.StateSuperContext;
 import com.chess.landlord._2state.simple.*;
 
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -255,7 +257,8 @@ public class SimpleLandlord
         }
         final Runnable ticker = this.ticker;
         if(Objects.isNull(ticker)){
-            log.println("ticker is null");
+            if(config.isDebug())
+                log.println("ticker is null");
         }else{
             try{
                 ticker.run();
@@ -291,12 +294,23 @@ public class SimpleLandlord
     @Override
     public void onDealingSuccess(StateHandler state) {
         final Dealing dealing = (Dealing) state;
+        final List<Poker>[] result = dealing.result();
+        data.one = result[0];
+        data.two = result[1];
+        data.three = result[2];
+        data.goal = result[3];
         this.onLanding();
+    }
+
+    @Override
+    public List<Poker> shuffledPokers() {
+        return data.shuffledPokers;
     }
 
     @Override
     public void onShufflingSuccess(StateHandler state) {
         final Shuffling shuffling = (Shuffling) state;
+        data.shuffledPokers = shuffling.result();
         this.onDealing();
     }
 

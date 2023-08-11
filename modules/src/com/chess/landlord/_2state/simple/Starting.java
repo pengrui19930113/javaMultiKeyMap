@@ -11,15 +11,23 @@ public class Starting implements StateHandler {
     protected long lastLogTime;
     protected Scheduler scheduler;
     protected Scheduler.Desc desc;
-    protected Scheduler.Desc desc2;
     @Override
     public void onInit(StateSuperContext ctx) {
         final StartingContext cs = (StartingContext) ctx;
         init = cs.last();
-        lastLogTime = 0;
-        scheduler = Scheduler.create();
-        desc = scheduler.once(()->cs.onStartingSuccess(Starting.this),3000);
-        desc2 = scheduler.schedule(()->System.out.println("now: "+ctx.now()),500,2,800);
+        ctx.log().println("enter starting state");
+        lastLogTime = 3;
+        scheduler = ctx.scheduler();
+        desc = scheduler.schedule(()->{
+            ctx.log().println(lastLogTime--);
+            if(0==lastLogTime){
+                scheduler.once(()->{
+                    ctx.log().println("leaving starting");
+                    cs.onStartingSuccess(Starting.this);
+                },1000);
+                desc.stop();
+            }
+        },0,0,1000);
     }
     @Override
     public void onTimer(StateSuperContext ctx) {
@@ -29,10 +37,10 @@ public class Starting implements StateHandler {
     @Override
     public void onDestroy(StateSuperContext ctx) {
         final StartingContext cs = (StartingContext) ctx;
-        desc.destroy();
+        if(!desc.destroy()){
+            ctx.log().println("warning for desc.destroy on starting.destroy");
+        }
         desc = null;
-        desc2.destroy();
-        desc2 = null;
         scheduler.destroy();
         scheduler = null;
     }

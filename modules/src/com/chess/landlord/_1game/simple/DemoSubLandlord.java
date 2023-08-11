@@ -13,15 +13,15 @@ public class DemoSubLandlord extends SimpleLandlord {
         switch (n){
             case 'a':
             case 'b':
-                System.out.println("a b");
+                log().println("a b");
                 break;
             default:
-                System.out.println("unknown");
+                log().println("unknown");
         }
         //same as upon
         switch (n) {
-            case 'a', 'b' -> System.out.println("a b");
-            default -> System.out.println("unknown");
+            case 'a', 'b' -> log().println("a b");
+            default -> log().println("unknown");
         }
     }
 }

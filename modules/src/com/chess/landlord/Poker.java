@@ -1,6 +1,5 @@
 package com.chess.landlord;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -24,13 +23,15 @@ public class Poker implements Comparable<Poker> {
     public static final int INT_CLUB = BYTE_MASK&CLUB;
     public static final int INT_DIAMOND = BYTE_MASK&DIAMOND;
     public static final byte JOKER_TYPE = 0b0001_0000;
+    public static final byte STAR_TYPE = 0b0000_0000|STAR_MASK;
     /*
       8   7   6   5   4   3   2   1
       1. 桃杏梅芳 类型7,8两位
       2. 小王 0b0001_0000 大王 0b0001_1111, 第5位如果是1则是王
    */
     public static final byte
-            _3 = 3
+            ST = 0
+            ,_3 = 3
             ,_4 = 4
             ,_5 = 5
             ,_6 = 6
@@ -89,13 +90,14 @@ public class Poker implements Comparable<Poker> {
     }
 
     public String toMyString(boolean useChar) {
-        String star = isStar()?"*":"";
+        if(value == STAR_MASK)
+            return useChar?"*":"🌟";
         String type;
         String v;
         if(isJoker()){
-            final boolean isRj = (value&NO_JOKER_VALUE_MASK) >0;
+            final boolean isJoker = (value&NO_JOKER_VALUE_MASK) >0;
             type = useChar?"J":"🃏";
-            v = isRj?"R":"B";
+            v = isJoker?"R":"B";
         }else{
             switch (value&TYPE_MASK){
                 case SPADE->type=useChar?"S":"♠️";
@@ -118,7 +120,7 @@ public class Poker implements Comparable<Poker> {
                 }
             }
         }
-        return String.format("%s%s%s",star,type,v);
+        return String.format("%s%s%s",isStar()?"*":"",type,v);
     }
     public static final Poker[] NORMAL = {
             new Poker(SPADE,_3),new Poker(HEART,_3),new Poker(CLUB,_3),new Poker(DIAMOND,_3)
@@ -147,6 +149,7 @@ public class Poker implements Comparable<Poker> {
         final List<Poker> pokers = new LinkedList<>(){{
             add(new Poker(JOKER_TYPE,BJ));
             add(new Poker(JOKER_TYPE,RJ));
+//            add(new Poker(STAR_TYPE,ST));
         }};
         for(int i=_3;i<=__2;i++){
             for(int j=0;j<4;j++){

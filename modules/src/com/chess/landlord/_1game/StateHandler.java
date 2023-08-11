@@ -10,10 +10,10 @@ public interface StateHandler {
     void onTimer(StateSuperContext ctx);
     default void onTimeout(StateSuperContext ctx){}
     default void onAction(StateSuperContext ctx,Object... params){
-        System.out.println("****** default start ******");
-        System.out.println("ctx:"+ctx);
-        System.out.println(Arrays.asList(params));
-        System.out.println("****** default start ******");
+        ctx.log().println("****** default start ******");
+        ctx.log().println("ctx:"+ctx);
+        ctx.log().println(Arrays.asList(params));
+        ctx.log().println("****** default start ******");
     }
     default void onInit(StateSuperContext ctx){}
     default void onDestroy(StateSuperContext ctx){}

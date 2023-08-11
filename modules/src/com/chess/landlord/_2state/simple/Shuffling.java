@@ -1,20 +1,25 @@
 package com.chess.landlord._2state.simple;
 
 import com.chess.Scheduler;
+import com.chess.landlord.Poker;
 import com.chess.landlord._1game.StateHandler;
 import com.chess.landlord._1game.StateSuperContext;
 
-import java.util.Objects;
+import java.util.*;
 
 public class Shuffling implements StateHandler {
     protected Scheduler scheduler;
     protected Scheduler.Desc desc;
+    protected List<Poker> pokers;
     @Override
     public void onInit(StateSuperContext ctx) {
 //        StateHandler.super.onInit(ctx);
         final ShufflingContext sc = (ShufflingContext) ctx;
-        scheduler = Scheduler.create();
-        desc = scheduler.schedule(()->System.out.println("Shuffling.onInit.update: "+ctx.now()),500,2,800);
+        scheduler = ctx.scheduler();
+        ctx.log().println("enter shuffling state");
+        desc = scheduler.once(()->ctx.log().println("print help to got some information to help yourself"),300);
+        pokers = new ArrayList<>(Poker.pokerWithStart());
+        Collections.shuffle(pokers);
     }
 
     @Override
@@ -22,7 +27,21 @@ public class Shuffling implements StateHandler {
         final ShufflingContext sc = (ShufflingContext) ctx;
         scheduler.tick();
     }
-
+    private void show(StateSuperContext ctx){
+        final int LINE_COUNT = 9;
+        int i=LINE_COUNT;
+        for (Poker poker : pokers) {
+            ctx.log().print(poker+" ");
+            i--;
+            if(0==i){
+                i = LINE_COUNT;
+                ctx.log().println();
+            }
+        }
+    }
+    public List<Poker> result(){
+        return new ArrayList<>(pokers);
+    }
     @Override
     public void onAction(StateSuperContext ctx, Object... params) {
         final ShufflingContext sc = (ShufflingContext) ctx;
@@ -30,16 +49,24 @@ public class Shuffling implements StateHandler {
             final Object param = params[0];
             if(param.getClass().isAssignableFrom(String.class)){
                 if(Objects.equals("next",param)){
-                    System.out.println("state change");
+                    ctx.log().println("leaving shuffling");
                     sc.onShufflingSuccess(this);
+                }else if(Objects.equals("help",param)){
+                    ctx.log().println("help: for got some info to use command line");
+                    ctx.log().println("next: go to next state");
+                }else if(Objects.equals("reshuffle",param)){
+                    Collections.shuffle(pokers);
+                    show(ctx);
+                }else if(Objects.equals("show",param)){
+                    show(ctx);
                 }else{
-                    System.out.println("unknown cmd:"+param);
+                    ctx.log().println("unknown cmd:"+param+" , please use help");
                 }
             }else{
-                System.out.println(param.getClass()+" value:"+param);
+                ctx.log().println(param.getClass()+" value:"+param);
             }
         }else{
-            System.out.println("empty params");
+            ctx.log().println("empty params");
         }
     }
 
@@ -49,10 +76,13 @@ public class Shuffling implements StateHandler {
         desc = null;
         scheduler.destroy();;
         scheduler = null;
+        pokers.clear();
+        pokers = null;
     }
 
     public static void main(String[] args) {
-        final Object param = "";
-        System.out.println(param.getClass().isAssignableFrom(String.class));
+        //CharSequence param = "";
+        System.out.println(CharSequence.class.isAssignableFrom(String.class));//true
+        System.out.println(String.class.isAssignableFrom(CharSequence.class));//false
     }
 }

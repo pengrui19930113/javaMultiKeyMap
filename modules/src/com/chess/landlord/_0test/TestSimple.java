@@ -4,13 +4,16 @@ import com.chess.landlord.GeneralLandlord;
 import com.chess.landlord.LandlordFactory;
 import com.chess.landlord.Type;
 
+import java.io.PrintStream;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TestSimple {
-
+    public static PrintStream log(){
+        return System.out;
+    }
     static void sleep(long l){
         try {
             TimeUnit.MILLISECONDS.sleep(l<=0?20:l);
@@ -22,7 +25,7 @@ public class TestSimple {
         final GeneralLandlord game = LandlordFactory.getInstance().create(Type.SIMPLE);
         final AtomicBoolean running = new AtomicBoolean(true);
         final Thread ticker = new Thread(()->{
-            System.out.println("thread start");
+            log().println("thread start");
             while(running.get()){
                 game.onTimer();
                 sleep(50);
@@ -32,7 +35,7 @@ public class TestSimple {
         game.onInit();
         final Scanner scanner = new Scanner(System.in);
         String line;
-        System.out.println("wait type in main");
+        log().println("wait type in main");
         while(null!=(line = scanner.nextLine())){
             line = line.trim();
             if(Objects.equals("quit",line)){
@@ -41,18 +44,25 @@ public class TestSimple {
             }else if(Objects.equals("info",line)){
                 game.info();
             }else{
-                game.onAction(line);
+                game.onAction(line.split("\\s"));
             }
-//            System.out.println("wait type in main");
+//            log().println("wait type in main");
         }
-        System.out.println("wait thread");
+        log().println("wait thread");
         try {
             ticker.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("thread done");
+        log().println("thread done");
         game.onDestroy();
-        System.out.println("destroy game");
+        log().println("destroy game");
+    }
+
+    public static void main2(String[] args) {
+        String[] split = "abc\tdef g\nhgl".split("\\s");
+        for (String s : split) {
+            System.out.println(s);
+        }
     }
 }

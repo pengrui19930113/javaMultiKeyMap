@@ -1,5 +1,6 @@
 package com.chess;
 
+import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -8,6 +9,20 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * delay    延迟时间    n<=0:不延迟    ｜n>0:延迟n
  * repeat   重复次数    n<=0:无穷次    ｜1:单次       ｜n>1:多次
 * interval  间隔时间    n<=0:不间隔    ｜n>0:间隔n
+ *
+ * 单次 不间隔 延迟
+ * 单次 不间隔 不延迟
+ *
+ * 多次 不间隔 延迟
+ * 多次 不间隔 不延迟
+ * 多次 间隔 延迟
+ * 多次 间隔 不延迟
+ *
+ * 无穷次 不间隔 延迟
+ * 无穷次 不间隔 不延迟
+ * 无穷次 间隔 延迟
+ * 无穷次 间隔 不延迟
+ *
  */
 public interface Scheduler {
     List<Scheduler> MANAGER = new LinkedList<>();
@@ -40,11 +55,14 @@ public interface Scheduler {
         return schedule(r,delay,1,0,false);
     }
 
+
     /**
      * 不允许并发调用
      */
     void tick();
     void destroy();
+
+    default PrintStream log(){ return System.out;}
     class SchedulerImpl implements Scheduler{
         protected Queue<DescImpl> queue;
         public SchedulerImpl(){
@@ -55,7 +73,7 @@ public interface Scheduler {
             final DescImpl di = new DescImpl(r,delay,repeat,interval,stopped);
             boolean offer = queue.offer(di);
             if(!offer){
-                System.out.println("warning queue.offer failure");
+                log().println("warning queue.offer failure");
             }
             return di;
         }
@@ -96,6 +114,7 @@ public interface Scheduler {
             protected boolean destroyed;
             protected long nextRunningTime;
             protected long runningTimes;
+            protected final boolean useNowWhenResumed = true;
             public DescImpl(Runnable r, long delay, long repeat, long interval, boolean stopped){
                 runnable = r;
                 this.delay=delay<0?0:delay;
@@ -123,6 +142,8 @@ public interface Scheduler {
                 else{
                     stopped = false;
                     lastResumeTime = now();
+                    if(useNowWhenResumed)
+                        nextRunningTime = lastResumeTime;
                 }
                 return true;
             }
@@ -136,7 +157,7 @@ public interface Scheduler {
                     return false;
                 final boolean res = SchedulerImpl.this.remove(this);
                 if(!res){
-                    System.out.println("warning non exists");
+                    log().println("warning non exists");
                 }
                 destroyed = true;
                 return true;
@@ -156,7 +177,10 @@ public interface Scheduler {
                 }
                 if(repeat == runningTimes
                         && runningTimes>0){
-                    destroy();
+                    final boolean res = destroy();
+                    if(!res){
+                        log().println("warning non destroy");
+                    }
                 }
             }
 
